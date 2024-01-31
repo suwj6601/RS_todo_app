@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  react-frontend:
+    build: .
+    container_name: skybase-react
+    image: skybase-react:latest
+    ports:
+      - '4400:3000'
+    tty: true
+    stdin_open: true
+    volumes:
+      - .:/app

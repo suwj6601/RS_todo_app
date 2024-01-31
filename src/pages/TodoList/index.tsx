@@ -1,0 +1,462 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Button,
+  Input,
+  InputRef,
+  PaginationProps,
+  Popconfirm,
+  Space,
+  Table,
+  TableColumnType,
+  message,
+} from 'antd';
+import moment from 'moment';
+import Highlighter from 'react-highlight-words';
+import { FilterDropdownProps } from 'antd/es/table/interface';
+import { useDispatch, useSelector } from 'react-redux';
+import { EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
+import TodoListModal from './TodoListModal';
+import './style.scss';
+import { PRIORITY, STATUS } from 'src/constants/consts';
+import CONSTS from '../../constants/consts';
+import { actSetSelectedTodo, actDeleteTodo } from 'src/redux/reducers/todo';
+
+type DataIndex = keyof DataType;
+
+interface DataType {
+  index: number;
+  title: string;
+  description: string;
+  status: string;
+  dueDate: any;
+  priority: string;
+}
+
+const renderFilter = (data: any) => {
+  const resultFilter = Object.entries(data).map(([key, value]) => ({
+    _key: key,
+    text: value,
+    value: value,
+  }));
+
+  return resultFilter;
+};
+
+const statusFilter = renderFilter(STATUS);
+const priorityFilter = renderFilter(PRIORITY);
+
+const renderColumns = (
+  renderStatus,
+  onEditTodo,
+  onDeleteTodo,
+  renderPriority,
+  getColumnSearchProps,
+) => {
+  return [
+    {
+      title: 'Index',
+      dataIndex: 'index',
+      width: '5%',
+    },
+    {
+      title: 'Title',
+      dataIndex: 'title',
+      width: '20%',
+      ...getColumnSearchProps('title'),
+    },
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      width: '30%',
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      width: '10%',
+      filters: statusFilter,
+      onFilter: (value: string, record) => record.status === value,
+      render: (value) => {
+        const listName = renderStatus(value);
+
+        return listName;
+      },
+    },
+    {
+      title: 'Due date',
+      dataIndex: 'dueDate',
+      width: '20%',
+      render: (value) => {
+        const currentDate = moment();
+        const dateTimeToCheck = moment(value[1].toISOString());
+        const isOverDue = dateTimeToCheck.isBefore(currentDate);
+
+        const startDate = value[0].format(CONSTS.FORMAT_TIME);
+        const endDate = value[1].format(CONSTS.FORMAT_TIME);
+
+        return (
+          <span style={{ color: isOverDue ? 'red' : undefined }}>
+            {startDate} - {endDate}
+          </span>
+        );
+      },
+    },
+    {
+      title: 'Priority',
+      dataIndex: 'priority',
+      width: '5%',
+      // filter: statusFilter,
+      onFilter: (value: string, record) => record.priority === value,
+      render: (value) => renderPriority(value),
+      filters: priorityFilter,
+      // onFilter: (value: string, record) => record.status === value,
+    },
+    {
+      title: 'Action',
+      dataIndex: 'action',
+      width: '10%',
+      /* @ts-ignore */
+      render: (value, record) => (
+        <div className='list-icon'>
+          <EditOutlined onClick={() => onEditTodo(record)} />
+
+          <Popconfirm
+            title='Delete todo job'
+            description='Are you sure to delete this todo?'
+            onConfirm={() => onDeleteTodo(record.id)}
+            okText='Yes'
+            cancelText='No'
+          >
+            <DeleteOutlined />
+          </Popconfirm>
+        </div>
+      ),
+    },
+  ];
+};
+
+const renderStatus = (status: string) => {
+  switch (status) {
+    case STATUS.TODO:
+      return (
+        <div
+          style={{
+            color: '#f15a5a',
+            background: '#de9f9f',
+            width: '50px',
+            padding: '5px',
+            borderRadius: '5px',
+            fontWeight: '700',
+            textAlign: 'center',
+          }}
+        >
+          {status}
+        </div>
+      );
+    case STATUS.DONE:
+      return (
+        <div
+          style={{
+            color: '#15B166',
+            background: '#EFFEF6',
+            width: '50px',
+            padding: '5px',
+            borderRadius: '5px',
+            fontWeight: '700',
+            textAlign: 'center',
+          }}
+        >
+          {status}
+        </div>
+      );
+    case STATUS.HOLD:
+      return (
+        <div
+          style={{
+            color: '#A49200',
+            background: '#FEF9EF',
+            width: '50px',
+            padding: '5px',
+            borderRadius: '5px',
+            fontWeight: '700',
+            textAlign: 'center',
+          }}
+        >
+          {status}
+        </div>
+      );
+    default:
+      return <div style={{ color: 'white' }}>{status}</div>;
+  }
+};
+
+const renderPriority = (priority: string) => {
+  switch (priority) {
+    case PRIORITY.HIGH:
+      return (
+        <div
+          style={{
+            color: '#f15a5a',
+            background: '#de9f9f',
+            width: '50px',
+            padding: '5px',
+            borderRadius: '5px',
+            fontWeight: '700',
+            textAlign: 'center',
+          }}
+        >
+          {priority}
+        </div>
+      );
+    case PRIORITY.MEDIUM:
+      return (
+        <div
+          style={{
+            color: '#15B166',
+            background: '#EFFEF6',
+            width: '70px',
+            padding: '5px',
+            borderRadius: '5px',
+            fontWeight: '700',
+            textAlign: 'center',
+          }}
+        >
+          {priority}
+        </div>
+      );
+    case PRIORITY.LOW:
+      return (
+        <div
+          style={{
+            color: '#A49200',
+            background: '#FEF9EF',
+            width: '50px',
+            padding: '5px',
+            borderRadius: '5px',
+            fontWeight: '700',
+            textAlign: 'center',
+          }}
+        >
+          {priority}
+        </div>
+      );
+    default:
+      return <div style={{ color: 'white' }}>{priority}</div>;
+  }
+};
+
+const TodoListPage = () => {
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+  const [page, onSetPage] = useState(1);
+  const [pageSize, onSetPageSize] = useState(5);
+  const [dataSource, setDataSource] = useState([]);
+
+  const [searchText, setSearchText] = useState('');
+  const [searchedColumn, setSearchedColumn] = useState('');
+  const searchInput = useRef<InputRef>(null);
+
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const dispatch = useDispatch();
+  const todoAppState = useSelector((state: any) => state.TodoApp);
+  const { listTodoApp } = todoAppState;
+
+  const isLoadingTable = useMemo(() => {
+    return dataSource?.length === 0;
+  }, [dataSource]);
+
+  const totalData = listTodoApp?.length || 0;
+  const onShowTotalData = () => {
+    return <>Has {totalData} data</>;
+  };
+
+  useEffect(() => {
+    const updatedDataSource = paginateData(listTodoApp, page, pageSize).map(
+      (item, index: number) => ({ ...item, index: index + 1 }),
+    );
+
+    /* @ts-ignore */
+    setDataSource(updatedDataSource);
+  }, [page, pageSize, todoAppState?.listTodoApp]);
+
+  const onAddTodo = () => {
+    setIsModalOpen(true);
+  };
+
+  const onEditTodo = (record: any) => {
+    dispatch(actSetSelectedTodo(record));
+    setIsModalOpen(true);
+  };
+
+  const onCloseModal = () => {
+    dispatch(actSetSelectedTodo(null));
+    setIsModalOpen(false);
+  };
+
+  const warningDeleteTodo = () => {
+    messageApi.open({
+      type: 'warning',
+      content: 'Select todo to delete',
+    });
+  };
+
+  const onShowDeleteNotificationSuccess = () => {
+    messageApi.open({
+      type: 'success',
+      content: 'Delete successfully',
+    });
+  };
+
+  const onDeleteTodo = (deleteId: string) => {
+    if (!deleteId) return warningDeleteTodo();
+    dispatch(actDeleteTodo(deleteId));
+    onShowDeleteNotificationSuccess();
+  };
+
+  const paginateData = (data: any[], page: number, pageSize: number) => {
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return data.slice(startIndex, endIndex);
+  };
+
+  /* @ts-ignore */
+  const onTableChange = (pagination?: PaginationProps, filter?: any, sorter?: any) => {
+    if (pagination?.current !== page) {
+      onSetPage(pagination?.current as number);
+    }
+    if (pagination?.pageSize !== pageSize) {
+      onSetPageSize(pagination?.pageSize as number);
+    }
+  };
+
+  const handleSearch = (
+    selectedKeys: string[],
+    confirm: FilterDropdownProps['confirm'],
+    dataIndex: DataIndex,
+  ) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+
+  const handleReset = (clearFilters: () => void) => {
+    clearFilters();
+    setSearchText('');
+  };
+
+  const getColumnSearchProps = (dataIndex: DataIndex): TableColumnType<DataType> => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+      <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+        <Input
+          ref={searchInput}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
+          style={{ marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <Button
+            type='primary'
+            onClick={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size='small'
+            style={{ width: 90 }}
+          >
+            Search
+          </Button>
+          <Button
+            onClick={() => clearFilters && handleReset(clearFilters)}
+            size='small'
+            style={{ width: 90 }}
+          >
+            Reset
+          </Button>
+          <Button
+            type='link'
+            size='small'
+            onClick={() => {
+              confirm({ closeDropdown: false });
+              setSearchText((selectedKeys as string[])[0]);
+              setSearchedColumn(dataIndex);
+            }}
+          >
+            Filter
+          </Button>
+          <Button
+            type='link'
+            size='small'
+            onClick={() => {
+              close();
+            }}
+          >
+            close
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: (filtered: boolean) => (
+      <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex]
+        .toString()
+        .toLowerCase()
+        .includes((value as string).toLowerCase()),
+    onFilterDropdownOpenChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
+      }
+    },
+    render: (text) =>
+      searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ''}
+        />
+      ) : (
+        text
+      ),
+  });
+
+  return (
+    <>
+      {contextHolder}
+      <div className='heading'>
+        <Button onClick={onAddTodo}>+ Add</Button>
+      </div>
+
+      <Table
+        loading={isLoadingTable}
+        dataSource={dataSource}
+        /* @ts-ignore */
+        columns={renderColumns(
+          renderStatus,
+          onEditTodo,
+          onDeleteTodo,
+          renderPriority,
+          getColumnSearchProps,
+        )}
+        pagination={{
+          total: totalData,
+          pageSize,
+          pageSizeOptions: ['5', '10', '15', '20'],
+          current: page,
+          showSizeChanger: true,
+          size: 'small',
+          locale: { items_per_page: '/ trang' },
+          showTotal: onShowTotalData,
+        }}
+        onChange={onTableChange}
+        size='middle'
+        style={{ width: '98vw' }}
+      />
+
+      <TodoListModal isOpen={isModalOpen} onCloseModal={onCloseModal} />
+    </>
+  );
+};
+
+export default TodoListPage;
