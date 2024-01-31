@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { Form, Input, Modal, Select, DatePicker, Button, message } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
+import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
 import { actAddTodo, actEditTodo } from '../../redux/reducers/todo';
 import { PRIORITY, STATUS } from 'src/constants/consts';
@@ -27,17 +28,19 @@ const TodoListModal = (props: TodoListModalProps) => {
 
   useEffect(() => {
     // set field value when edit todo
+
     if (!isAddTodo) {
       form.setFieldsValue({
         title: selectedTodo.title,
         description: selectedTodo.description,
+        dueDate: [dayjs(selectedTodo.startDate), dayjs(selectedTodo.endDate)],
         status: selectedTodo.status,
         priority: selectedTodo.priority,
       });
     } else {
       form.resetFields();
     }
-  }, [isAddTodo, isOpen]);
+  }, [isAddTodo]);
 
   const [form] = Form.useForm();
   const dispatch = useDispatch();

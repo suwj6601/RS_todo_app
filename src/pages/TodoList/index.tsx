@@ -10,7 +10,6 @@ import {
   TableColumnType,
   message,
 } from 'antd';
-import moment from 'moment';
 import Highlighter from 'react-highlight-words';
 import { FilterDropdownProps } from 'antd/es/table/interface';
 import { useDispatch, useSelector } from 'react-redux';
@@ -20,6 +19,7 @@ import './style.scss';
 import { PRIORITY, STATUS } from 'src/constants/consts';
 import CONSTS from '../../constants/consts';
 import { actSetSelectedTodo, actDeleteTodo } from 'src/redux/reducers/todo';
+import dayjs from 'dayjs';
 
 type DataIndex = keyof DataType;
 
@@ -86,8 +86,8 @@ const renderColumns = (
       dataIndex: 'dueDate',
       width: '20%',
       render: (value) => {
-        const currentDate = moment();
-        const dateTimeToCheck = moment(value[1].toISOString());
+        const currentDate = dayjs();
+        const dateTimeToCheck = dayjs(value[1].toISOString());
         const isOverDue = dateTimeToCheck.isBefore(currentDate);
 
         const startDate = value[0].format(CONSTS.FORMAT_TIME);
@@ -104,11 +104,9 @@ const renderColumns = (
       title: 'Priority',
       dataIndex: 'priority',
       width: '5%',
-      // filter: statusFilter,
       onFilter: (value: string, record) => record.priority === value,
       render: (value) => renderPriority(value),
       filters: priorityFilter,
-      // onFilter: (value: string, record) => record.status === value,
     },
     {
       title: 'Action',
@@ -126,7 +124,7 @@ const renderColumns = (
             okText='Yes'
             cancelText='No'
           >
-            <DeleteOutlined />
+            <DeleteOutlined color='red' />
           </Popconfirm>
         </div>
       ),
