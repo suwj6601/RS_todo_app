@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Button,
   Input,
@@ -18,8 +18,8 @@ import TodoListModal from './TodoListModal';
 import './style.scss';
 import { PRIORITY, STATUS } from 'src/constants/consts';
 import CONSTS from '../../constants/consts';
-import { actSetSelectedTodo, actDeleteTodo } from 'src/redux/reducers/todo';
 import dayjs from 'dayjs';
+import { actDeleteTodo, actSetSelectedTodo, getListTodoApp } from 'src/redux/action/todo';
 
 type DataIndex = keyof DataType;
 
@@ -87,11 +87,11 @@ const renderColumns = (
       width: '20%',
       render: (value) => {
         const currentDate = dayjs();
-        const dateTimeToCheck = dayjs(value[1].toISOString());
+        const dateTimeToCheck = dayjs(dayjs(value[1]).toISOString());
         const isOverDue = dateTimeToCheck.isBefore(currentDate);
 
-        const startDate = value[0].format(CONSTS.FORMAT_TIME);
-        const endDate = value[1].format(CONSTS.FORMAT_TIME);
+        const startDate = dayjs(value[0]).format(CONSTS.FORMAT_TIME);
+        const endDate = dayjs(value[1]).format(CONSTS.FORMAT_TIME);
 
         return (
           <span style={{ color: isOverDue ? 'red' : undefined }}>
@@ -251,31 +251,34 @@ const TodoListPage = () => {
 
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
+  const [isLoadingTable, setIsLoadingTable] = useState<boolean>(true);
   const searchInput = useRef<InputRef>(null);
 
   const [messageApi, contextHolder] = message.useMessage();
 
   const dispatch = useDispatch();
   const todoAppState = useSelector((state: any) => state.TodoApp);
-  const { listTodoApp } = todoAppState;
+  const { todoList } = todoAppState;
 
-  const isLoadingTable = useMemo(() => {
-    return dataSource?.length === 0;
-  }, [dataSource]);
-
-  const totalData = listTodoApp?.length || 0;
+  const totalData = todoList?.length || 0;
   const onShowTotalData = () => {
     return <>Has {totalData} data</>;
   };
 
   useEffect(() => {
-    const updatedDataSource = paginateData(listTodoApp, page, pageSize).map(
-      (item, index: number) => ({ ...item, index: index + 1 }),
-    );
+    dispatch(getListTodoApp());
+    setIsLoadingTable(false);
+  }, []);
+
+  useEffect(() => {
+    const updatedDataSource = paginateData(todoList, page, pageSize).map((item, index: number) => ({
+      ...item,
+      index: index + 1,
+    }));
 
     /* @ts-ignore */
     setDataSource(updatedDataSource);
-  }, [page, pageSize, todoAppState?.listTodoApp]);
+  }, [page, pageSize, todoAppState?.todoList]);
 
   const onAddTodo = () => {
     setIsModalOpen(true);
@@ -308,6 +311,7 @@ const TodoListPage = () => {
   const onDeleteTodo = (deleteId: string) => {
     if (!deleteId) return warningDeleteTodo();
     dispatch(actDeleteTodo(deleteId));
+    dispatch(getListTodoApp());
     onShowDeleteNotificationSuccess();
   };
 

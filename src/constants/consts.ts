@@ -111,3 +111,11 @@ export const INIT_TODO = [
     id: 'fa42a3d0-0d67-453f-9d8e-5c067bf4ed1',
   },
 ];
+
+export const API_METHOD = {
+  GET: 'get',
+  POST: 'post',
+  DELETE: 'delete',
+  PUT: 'put',
+  PATCH: 'patch',
+};

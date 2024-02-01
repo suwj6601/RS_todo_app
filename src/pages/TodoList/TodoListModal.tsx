@@ -3,8 +3,8 @@ import { Form, Input, Modal, Select, DatePicker, Button, message } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
-import { actAddTodo, actEditTodo } from '../../redux/reducers/todo';
 import { PRIORITY, STATUS } from 'src/constants/consts';
+import { actCreateTodo, actUpdateTodo } from 'src/redux/action/todo';
 
 interface TodoListModalProps {
   isOpen: boolean;
@@ -28,7 +28,6 @@ const TodoListModal = (props: TodoListModalProps) => {
 
   useEffect(() => {
     // set field value when edit todo
-
     if (!isAddTodo) {
       form.setFieldsValue({
         title: selectedTodo.title,
@@ -54,10 +53,10 @@ const TodoListModal = (props: TodoListModalProps) => {
     const formValues = form.getFieldsValue();
 
     if (isAddTodo) {
-      dispatch(actAddTodo({ ...formValues, id }));
+      dispatch(actCreateTodo({ ...formValues, id }));
       onShowAddEditNotificationSuccess();
     } else {
-      dispatch(actEditTodo({ ...formValues, id: selectedTodo?.id }));
+      dispatch(actUpdateTodo({ ...formValues, id: selectedTodo?.id }));
       onShowAddEditNotificationSuccess();
     }
     onCloseModal();
