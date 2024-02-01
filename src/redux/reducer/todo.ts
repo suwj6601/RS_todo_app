@@ -1,4 +1,4 @@
-import { TYPE } from '../constants';
+import { ACTION_TYPE } from '../constants';
 
 const initialState = {
   todoList: [],
@@ -7,25 +7,23 @@ const initialState = {
 
 const todoReducer = (state = initialState, action) => {
   switch (action.type) {
-    case TYPE.GET_LIST_TODO:
+    case ACTION_TYPE.GET_LIST_TODO:
       return {
         ...state,
       };
 
-    case TYPE.GET_LIST_TODO_SUCCESS:
+    case ACTION_TYPE.GET_LIST_TODO_SUCCESS:
       return {
         ...state,
         todoList: action.payload.todoList.todoApp,
       };
 
-    case TYPE.GET_LIST_TODO_ERROR:
+    case ACTION_TYPE.GET_LIST_TODO_ERROR:
       return {
         ...state,
-        loading: false,
-        error: action.payload,
       };
 
-    case TYPE.SET_SELECTED_TODO:
+    case ACTION_TYPE.SET_SELECTED_TODO:
       return {
         ...state,
         selectedTodo: action.payload,

@@ -133,113 +133,69 @@ const renderColumns = (
 };
 
 const renderStatus = (status: string) => {
+  let colorClass = '';
+  let backgroundClass = '';
+
   switch (status) {
     case STATUS.TODO:
-      return (
-        <div
-          style={{
-            color: '#f15a5a',
-            background: '#de9f9f',
-            width: '50px',
-            padding: '5px',
-            borderRadius: '5px',
-            fontWeight: '700',
-            textAlign: 'center',
-          }}
-        >
-          {status}
-        </div>
-      );
+      colorClass = 'text-red-600';
+      backgroundClass = 'bg-red-200';
+      break;
     case STATUS.DONE:
-      return (
-        <div
-          style={{
-            color: '#15B166',
-            background: '#EFFEF6',
-            width: '50px',
-            padding: '5px',
-            borderRadius: '5px',
-            fontWeight: '700',
-            textAlign: 'center',
-          }}
-        >
-          {status}
-        </div>
-      );
+      colorClass = 'text-green-600';
+      backgroundClass = 'bg-green-100';
+      break;
     case STATUS.HOLD:
-      return (
-        <div
-          style={{
-            color: '#A49200',
-            background: '#FEF9EF',
-            width: '50px',
-            padding: '5px',
-            borderRadius: '5px',
-            fontWeight: '700',
-            textAlign: 'center',
-          }}
-        >
-          {status}
-        </div>
-      );
+      colorClass = 'text-yellow-800';
+      backgroundClass = 'bg-yellow-200';
+      break;
     default:
-      return <div style={{ color: 'white' }}>{status}</div>;
+      colorClass = 'text-white';
+      break;
   }
+
+  return (
+    <div
+      className={`w-20 p-2 rounded-lg font-semibold text-center ${colorClass} ${backgroundClass}`}
+    >
+      {status}
+    </div>
+  );
 };
 
 const renderPriority = (priority: string) => {
+  let colorClass = '';
+  let backgroundClass = '';
+  let widthClass = '';
+
   switch (priority) {
     case PRIORITY.HIGH:
-      return (
-        <div
-          style={{
-            color: '#f15a5a',
-            background: '#de9f9f',
-            width: '50px',
-            padding: '5px',
-            borderRadius: '5px',
-            fontWeight: '700',
-            textAlign: 'center',
-          }}
-        >
-          {priority}
-        </div>
-      );
+      colorClass = 'text-red-600';
+      backgroundClass = 'bg-red-200';
+      widthClass = 'w-20';
+      break;
     case PRIORITY.MEDIUM:
-      return (
-        <div
-          style={{
-            color: '#15B166',
-            background: '#EFFEF6',
-            width: '70px',
-            padding: '5px',
-            borderRadius: '5px',
-            fontWeight: '700',
-            textAlign: 'center',
-          }}
-        >
-          {priority}
-        </div>
-      );
+      colorClass = 'text-green-600';
+      backgroundClass = 'bg-green-100';
+      widthClass = 'w-20'; // Adjust the width as needed
+      break;
     case PRIORITY.LOW:
-      return (
-        <div
-          style={{
-            color: '#A49200',
-            background: '#FEF9EF',
-            width: '50px',
-            padding: '5px',
-            borderRadius: '5px',
-            fontWeight: '700',
-            textAlign: 'center',
-          }}
-        >
-          {priority}
-        </div>
-      );
+      colorClass = 'text-yellow-800';
+      backgroundClass = 'bg-yellow-200';
+      widthClass = 'w-20';
+      break;
     default:
-      return <div style={{ color: 'white' }}>{priority}</div>;
+      colorClass = 'text-white';
+      break;
   }
+
+  return (
+    <div
+      className={`p-2 rounded-lg font-semibold text-center ${colorClass} ${backgroundClass} ${widthClass}`}
+    >
+      {priority}
+    </div>
+  );
 };
 
 const TodoListPage = () => {

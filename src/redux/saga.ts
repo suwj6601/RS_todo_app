@@ -1,7 +1,7 @@
 import { all, call, put, takeEvery } from 'redux-saga/effects';
 import todoApi from '../api/todoApp';
 import { actSetSelectedTodo, getListTodoError, getListTodoSuccess } from './action/todo';
-import { TYPE } from './constants';
+import { ACTION_TYPE } from './constants';
 
 // ACTION: get list todo
 function* getListTodoSaga() {
@@ -13,7 +13,7 @@ function* getListTodoSaga() {
   }
 }
 function* watchGetListTodo() {
-  yield takeEvery(TYPE.GET_LIST_TODO, getListTodoSaga);
+  yield takeEvery(ACTION_TYPE.GET_LIST_TODO, getListTodoSaga);
 }
 
 // ACTION: select todo
@@ -22,7 +22,7 @@ function* actSetSelectedTodoSaga(action) {
 }
 
 function* watchSelectedTodo() {
-  yield takeEvery(TYPE.GET_LIST_TODO, actSetSelectedTodoSaga);
+  yield takeEvery(ACTION_TYPE.GET_LIST_TODO, actSetSelectedTodoSaga);
 }
 
 // ACTION: create todo
@@ -31,7 +31,7 @@ function* actCreateTodoSaga(action) {
   yield getListTodoSaga();
 }
 function* watchCreateTodo() {
-  yield takeEvery(TYPE.CREATE_TODO, actCreateTodoSaga);
+  yield takeEvery(ACTION_TYPE.CREATE_TODO, actCreateTodoSaga);
 }
 
 // ACTION: update todo
@@ -40,7 +40,7 @@ function* actUpdateTodoSaga(action) {
   yield getListTodoSaga();
 }
 function* watchUpdateTodo() {
-  yield takeEvery(TYPE.UPDATE_TODO, actUpdateTodoSaga);
+  yield takeEvery(ACTION_TYPE.UPDATE_TODO, actUpdateTodoSaga);
 }
 
 // ACTION: delete todo
@@ -50,7 +50,7 @@ function* actDeleteTodoSaga(action) {
 }
 
 function* watchDeleteTodo() {
-  yield takeEvery(TYPE.DELETE_TODO, actDeleteTodoSaga);
+  yield takeEvery(ACTION_TYPE.DELETE_TODO, actDeleteTodoSaga);
 }
 
 const todoAppSaga = [
